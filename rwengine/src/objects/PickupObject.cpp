@@ -176,7 +176,7 @@ void PickupObject::tick(float dt) {
     m_corona->particle.colour = glm::vec4(red / 255.f,
                                           green / 255.f,
                                           blue / 255.f,
-                                          1.f) * colourValue;
+                                          colourValue);
 
     if (m_enabled) {
         // Sort out interactions with things that may or may not be players.

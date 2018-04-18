@@ -527,6 +527,7 @@ void GameRenderer::renderEffects(GameWorld* world) {
         dp.count = 4;
         dp.blend = true;
         dp.diffuse = 1.f;
+        dp.visibility = particle.colour.a;
 
         renderer->drawArrays(transformMat, &particleDraw, dp);
     }
