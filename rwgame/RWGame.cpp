@@ -26,10 +26,10 @@
 #include <iomanip>
 #include <iostream>
 
-std::map<GameRenderer::SpecialModel, std::string> kSpecialModels = {
-    {GameRenderer::ZoneCylinderA, "zonecyla.dff"},
-    {GameRenderer::ZoneCylinderB, "zonecylb.dff"},
-    {GameRenderer::Arrow, "arrow.dff"}};
+std::map<GameRenderer::SpecialModel, std::pair<std::string,std::string>> kSpecialModels = {
+    {GameRenderer::ZoneCylinderA, std::pair<std::string,std::string>("zonecyla.dff","particle")},
+    {GameRenderer::ZoneCylinderB, std::pair<std::string,std::string>("zonecylb.dff","particle")},
+    {GameRenderer::Arrow,         std::pair<std::string,std::string>("arrow.dff",    "")}};
 
 namespace {
   constexpr float kPhysicsTimeStep = 1.0f/30.0f;
@@ -37,6 +37,17 @@ namespace {
 }
 
 #define MOUSE_SENSITIVITY_SCALE 2.5f
+
+TextureData::Handle static genArrowTexture() {
+    GLuint kSpecialModelsTextureName  = 0;
+    GLuint gSpecialTextureData[] = {0xFFFFFFFF};
+    glGenTextures(1, &kSpecialModelsTextureName);
+    glBindTexture(GL_TEXTURE_2D, kSpecialModelsTextureName);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+    GL_UNSIGNED_BYTE, gSpecialTextureData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    return TextureData::create(kSpecialModelsTextureName, {1, 1}, false);
+}
 
 RWGame::RWGame(Logger& log, int argc, char* argv[])
     : GameBase(log, argc, argv)
@@ -60,8 +71,19 @@ RWGame::RWGame(Logger& log, int argc, char* argv[])
 
     data.load();
 
+    TextureData::Handle arrowTexture = genArrowTexture();
+
     for (const auto& p : kSpecialModels) {
-        auto model = data.loadClump(p.second);
+        auto model = data.loadClump(p.second.first, p.second.second);
+
+        for(auto& atomic : model->getAtomics()) {
+
+            if (p.second.first.compare("arrow.dff")==0)
+                atomic->getGeometry()->materials[0].textures.emplace_back("","",arrowTexture);
+
+            atomic->getGeometry()->flags |= RW::BSGeometry::ModuleMaterialColor;
+            atomic->getGeometry()->materials[0].colour = glm::u8vec4(0,128,255,255);
+        }
         renderer.setSpecialModel(p.first, model);
     }
 
