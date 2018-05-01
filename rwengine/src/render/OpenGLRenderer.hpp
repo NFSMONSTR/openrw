@@ -53,6 +53,14 @@ struct VertexP3 {
     VertexP3() = default;
 };
 
+/**
+ * Enum used to determine which blending mode to use
+ */
+enum BlendMode {
+    BLEND_ALPHA,
+    BLEND_ADDITIVE
+};
+
 class Renderer {
 public:
     typedef std::vector<GLuint> Textures;
@@ -75,8 +83,8 @@ public:
         Textures textures;
         /// Alpha blending state
         bool blend;
-        /// Blending mode 0 - glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 1 - glBlendFunc(GL_ONE, GL_ONE);
-        size_t blendMode;
+        /// Blending mode
+        BlendMode blendMode;
         // Depth writing state
         bool depthWrite;
         /// Material
@@ -91,7 +99,7 @@ public:
         // Default state -- should be moved to materials
         DrawParameters()
             : blend(false)
-            , blendMode(0)
+            , blendMode(BLEND_ALPHA)
             , depthWrite(true)
             , ambient(1.f)
             , diffuse(1.f)
@@ -342,19 +350,19 @@ private:
     DrawBuffer* currentDbuff = nullptr;
     OpenGLShaderProgram* currentProgram = nullptr;
     bool blendEnabled = false;
-    size_t blendMode = 0;
+    BlendMode blendMode = BLEND_ALPHA;
     bool depthWriteEnabled = false;
     GLuint currentUBO = 0;
     GLuint currentUnit = 0;
     std::map<GLuint, GLuint> currentTextures;
 
-    void setBlendMode(size_t mode) {
+    void setBlendMode(BlendMode mode) {
         switch (mode) {
             default:
-            case 0:
+            case BLEND_ALPHA:
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 break;
-            case 1:
+            case BLEND_ADDITIVE:
                 glBlendFunc(GL_ONE, GL_ONE);
                 break;
         }
@@ -362,7 +370,7 @@ private:
     }
 
     // Set state
-    void setBlend(bool enable, size_t mode) {
+    void setBlend(bool enable, BlendMode mode) {
         if (enable && !blendEnabled) {
             glEnable(GL_BLEND);
             setBlendMode(mode);

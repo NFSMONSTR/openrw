@@ -520,7 +520,7 @@ void GameRenderer::renderEffects(GameWorld* world) {
         dp.start = 0;
         dp.count = 4;
         dp.blend = true;
-        dp.blendMode = 1;
+        dp.blendMode = BLEND_ADDITIVE;
         dp.diffuse = 1.f;
 
         renderer->drawArrays(transformMat, &particleDraw, dp);
