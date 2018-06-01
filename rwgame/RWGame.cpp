@@ -161,7 +161,7 @@ void RWGame::startScript(const std::string& name) {
 }
 
 void RWGame::showHelpMessage(GameStringKey id) {
-    state.text.addText<ScreenTextType::Big>(
+    state.text.addText<ScreenTextType::Help>(
             ScreenTextEntry::makeHelp(id, data.texts.text(id)));
 }
 
