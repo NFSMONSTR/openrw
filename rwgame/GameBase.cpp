@@ -99,6 +99,9 @@ GameBase::GameBase(Logger &inlog, int argc, char *argv[]) :
         fullscreen = config.getWindowFullscreen();
     }
 
+    extern std::unordered_multimap<int, GameInputState::Control> kControls;
+    kControls = config.getControls();
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         throw std::runtime_error("Failed to initialize SDL2!");
 

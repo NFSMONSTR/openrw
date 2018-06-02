@@ -5,6 +5,8 @@
 #include <vector>
 
 #include <rw/filesystem.hpp>
+#include <engine/GameInputState.hpp>
+#include <unordered_map>
 
 class GameConfig {
 private:
@@ -231,6 +233,9 @@ public:
     bool getWindowFullscreen() const {
         return m_windowFullscreen;
     }
+    std::unordered_multimap<int, GameInputState::Control> getControls() const {
+        return m_controls;
+    };
 
     static rwfs::path getDefaultConfigPath();
 private:
@@ -272,6 +277,9 @@ private:
     
     /// Set the window to fullscreen
     bool m_windowFullscreen;
+
+    /// Controls for game
+    std::unordered_multimap<int, GameInputState::Control> m_controls;
 };
 
 #endif

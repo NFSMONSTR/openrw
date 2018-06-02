@@ -6,9 +6,71 @@
 
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <SDL_keycode.h>
 namespace pt = boost::property_tree;
 
 const std::string kConfigDirectoryName("OpenRW");
+// Hardcoded Controls SDLK_* -> GameInputState::Control
+const std::unordered_multimap<int, std::pair<GameInputState::Control, std::string>> kDefaultControls = {
+        /* On Foot */
+        {SDLK_KP_0, std::pair<GameInputState::Control, std::string>(GameInputState::FireWeapon, "key_onFoot_FireWeapon")},
+        {SDLK_KP_ENTER, std::pair<GameInputState::Control, std::string>(GameInputState::NextWeapon, "key_onFoot_NextWeapon")},
+        {SDLK_KP_PERIOD, std::pair<GameInputState::Control, std::string>(GameInputState::LastWeapon, "key_onFoot_LastWeapon")},
+        {SDLK_w, std::pair<GameInputState::Control, std::string>(GameInputState::GoForward, "key_onFoot_GoForward")},
+        {SDLK_UP, std::pair<GameInputState::Control, std::string>(GameInputState::GoForward, "key_onFoot_GoForward_secondary")},
+        {SDLK_s, std::pair<GameInputState::Control, std::string>(GameInputState::GoBackwards, "key_onFoot_GoBackwards")},
+        {SDLK_DOWN, std::pair<GameInputState::Control, std::string>(GameInputState::GoBackwards, "key_onFoot_GoBackwards_secondary")},
+        {SDLK_a, std::pair<GameInputState::Control, std::string>(GameInputState::GoLeft, "key_onFoot_GoLeft")},
+        {SDLK_LEFT, std::pair<GameInputState::Control, std::string>(GameInputState::GoLeft, "key_onFoot_GoLeft_secondary")},
+        {SDLK_d, std::pair<GameInputState::Control, std::string>(GameInputState::GoRight, "key_onFoot_GoRight")},
+        {SDLK_RIGHT, std::pair<GameInputState::Control, std::string>(GameInputState::GoRight, "key_onFoot_GoRight_secondary")},
+        {SDLK_PAGEUP, std::pair<GameInputState::Control, std::string>(GameInputState::ZoomIn, "key_onFoot_ZoomIn")},
+        {SDLK_z, std::pair<GameInputState::Control, std::string>(GameInputState::ZoomIn, "key_onFoot_ZoomIn_secondary")},
+        {SDLK_PAGEDOWN, std::pair<GameInputState::Control, std::string>(GameInputState::ZoomOut, "key_onFoot_ZoomOut")},
+        {SDLK_x, std::pair<GameInputState::Control, std::string>(GameInputState::ZoomOut, "key_onFoot_ZoomOut_secondary")},
+        {SDLK_f, std::pair<GameInputState::Control, std::string>(GameInputState::EnterExitVehicle, "key_onFoot_EnterExitVehicle")},
+        {SDLK_RETURN, std::pair<GameInputState::Control, std::string>(GameInputState::EnterExitVehicle, "key_onFoot_EnterExitVehicle_secondary")},
+        {SDLK_c, std::pair<GameInputState::Control, std::string>(GameInputState::ChangeCamera, "key_onFoot_ChangeCamera")},
+        {SDLK_HOME, std::pair<GameInputState::Control, std::string>(GameInputState::ChangeCamera, "key_onFoot_ChangeCamera_secondary")},
+        {SDLK_RCTRL, std::pair<GameInputState::Control, std::string>(GameInputState::Jump, "key_onFoot_Jump")},
+        {SDLK_SPACE, std::pair<GameInputState::Control, std::string>(GameInputState::Jump, "key_onFoot_Jump_secondary")},
+        {SDLK_LSHIFT, std::pair<GameInputState::Control, std::string>(GameInputState::Sprint, "key_onFoot_Sprint")},
+        {SDLK_RSHIFT, std::pair<GameInputState::Control, std::string>(GameInputState::Sprint, "key_onFoot_Sprint_secondary")},
+        {SDLK_LALT, std::pair<GameInputState::Control, std::string>(GameInputState::Walk, "key_onFoot_Walk")},
+        {SDLK_DELETE, std::pair<GameInputState::Control, std::string>(GameInputState::AimWeapon, "key_onFoot_AimWeapon")},
+        {SDLK_CAPSLOCK, std::pair<GameInputState::Control, std::string>(GameInputState::LookBehind, "key_onFoot_LookBehind")},
+
+
+        /* In Vehicle */
+        {SDLK_LCTRL, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleFireWeapon, "key_inVehicle_VehicleFireWeapon")},
+        {SDLK_a, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleLeft, "key_inVehicle_VehicleLeft")},
+        {SDLK_LEFT, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleLeft, "key_inVehicle_VehicleLeft_secondary")},
+        {SDLK_d, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleRight, "key_inVehicle_VehicleRight")},
+        {SDLK_RIGHT, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleRight, "key_inVehicle_VehicleRight_secondary")},
+        {SDLK_w, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleAccelerate, "key_inVehicle_VehicleAccelerate")},
+        {SDLK_UP, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleAccelerate, "key_inVehicle_VehicleAccelerate_secondary")},
+        {SDLK_d, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleBrake, "key_inVehicle_VehicleBrake")},
+        {SDLK_DOWN, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleBrake, "key_inVehicle_VehicleBrake_secondary")},
+        {SDLK_INSERT, std::pair<GameInputState::Control, std::string>(GameInputState::ChangeRadio, "key_inVehicle_ChangeRadio")},
+        {SDLK_r, std::pair<GameInputState::Control, std::string>(GameInputState::ChangeRadio, "key_inVehicle_ChangeRadio_secondary")},
+        {SDLK_LSHIFT, std::pair<GameInputState::Control, std::string>(GameInputState::Horn, "key_inVehicle_Horn")},
+        {SDLK_RSHIFT, std::pair<GameInputState::Control, std::string>(GameInputState::Horn, "key_inVehicle_Horn_secondary")},
+        {SDLK_KP_PLUS, std::pair<GameInputState::Control, std::string>(GameInputState::Submission, "key_inVehicle_Submission")},
+        {SDLK_CAPSLOCK, std::pair<GameInputState::Control, std::string>(GameInputState::Submission, "key_inVehicle_Submission_secondary")},
+        {SDLK_RCTRL, std::pair<GameInputState::Control, std::string>(GameInputState::Handbrake, "key_inVehicle_Handbrake")},
+        {SDLK_SPACE, std::pair<GameInputState::Control, std::string>(GameInputState::Handbrake, "key_inVehicle_Handbrake_secondary")},
+        {SDLK_KP_9, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleAimUp, "key_inVehicle_VehicleAimUp")},
+        {SDLK_KP_2, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleAimDown, "key_inVehicle_VehicleAimDown")},
+        {SDLK_KP_4, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleAimLeft, "key_inVehicle_VehicleAimLeft")},
+        {SDLK_KP_6, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleAimRight, "key_inVehicle_VehicleAimRight")},
+        {SDLK_KP_9, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleDown, "key_inVehicle_VehicleDown")},
+        {SDLK_KP_2, std::pair<GameInputState::Control, std::string>(GameInputState::VehicleUp, "key_inVehicle_VehicleUp")},
+        {SDLK_KP_1, std::pair<GameInputState::Control, std::string>(GameInputState::LookLeft, "key_inVehicle_LookLeft")},
+        {SDLK_q, std::pair<GameInputState::Control, std::string>(GameInputState::LookLeft, "key_inVehicle_LookLeft_secondary")},
+        {SDLK_KP_2, std::pair<GameInputState::Control, std::string>(GameInputState::LookRight, "key_inVehicle_LookRight")},
+        {SDLK_e, std::pair<GameInputState::Control, std::string>(GameInputState::LookRight, "key_inVehicle_LookRight_secondary")},
+
+};
 
 GameConfig::GameConfig()
     : m_configPath()
@@ -229,6 +291,12 @@ GameConfig::ParseResult GameConfig::parseConfig(GameConfig::ParseType srcType,
     read_config("game.language", this->m_gameLanguage, "american", deft);
 
     read_config("input.invert_y", this->m_inputInvertY, false, boolt);
+
+    for (auto control : kDefaultControls) {
+        int key_code;
+        read_config("input."+control.second.second, key_code, control.first, intt);
+        m_controls.insert(std::pair<int, GameInputState::Control>(key_code, control.second.first));
+    }
 
     read_config("window.width", this->m_windowWidth, 800, intt);
     read_config("window.height", this->m_windowHeight, 600, intt);
